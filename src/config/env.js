@@ -1,0 +1,33 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+
+const requiredEnvVars = [
+    "PORT",
+    "MONGO_URI",
+    "ACCESS_TOKEN_SECRET",
+    "REFRESH_TOKEN_SECRET",
+    "ACCESS_TOKEN_EXPIRY",
+    "REFRESH_TOKEN_EXPIRY"
+]
+
+
+const missingVars = requiredEnvVars.filter((key) => !process.env[key])
+
+
+if (missingVars.length > 0) {
+    console.error(`Missing Variables: ${missingVars.join(", ")}`);
+    process.exit(1);    
+}
+
+
+
+export const ENV = {
+    PORT: process.env.PORT,
+  MONGO_URI: process.env.MONGO_URI,
+  ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
+  ACCESS_TOKEN_EXPIRY: process.env.ACCESS_TOKEN_EXPIRY,
+  REFRESH_TOKEN_EXPIRY: process.env.REFRESH_TOKEN_EXPIRY,
+  NODE_ENV: process.env.NODE_ENV || "development",
+}
