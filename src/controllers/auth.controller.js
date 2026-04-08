@@ -25,7 +25,7 @@ export const register = async (req, res) => {
 
     // Save Refresh Token in DB
     user.refreshToken = refreshToken;
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
     // Save Refresh token to cookie
     res.cookie("refreshToken", refreshToken, {
@@ -47,6 +47,7 @@ export const register = async (req, res) => {
     });
 
   } catch (error) {
+    console.log(error)
     return sendResponse(res, 500, "Server error", error.message);
   }
 };
