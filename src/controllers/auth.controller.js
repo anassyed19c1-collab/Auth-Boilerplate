@@ -15,7 +15,7 @@ export const register = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return sendResponse(res, 400, "Email already registered");
+      return sendResponse(res, 400, "Email Already Registered");
     }
 
     // Create user
@@ -137,7 +137,6 @@ export const logout = async (req, res) => {
     return sendResponse(res, 500, "Server error", error.message);
   }
 };
-
 
 
 
