@@ -106,3 +106,32 @@ export const login = async (req, res) => {
     return sendResponse(res, 500, "Server error", error.message);
   }
 };
+
+
+
+export const logout = async (req, res) => {
+  try {
+    const token = req.cookies?.refreshToken;
+
+    if (!token) {
+      return sendResponse(res, 401, "unauthorized");
+    }
+
+    await User.findOneAndUpdate(
+      { refreshToken: token },
+      { refreshToken: null }
+    );
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: ENV.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    return sendResponse(res, 200, "Logout successful");
+
+  } catch (error) {
+    console.log(error);
+    return sendResponse(res, 500, "Server error", error.message);
+  }
+};
