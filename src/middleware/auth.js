@@ -4,11 +4,12 @@ import sendResponse from "../utils/sendResponse.js";
 
 const verifyToken = (req, res, next) => {
   try {
-
+    // console.log("Headers:", req.headers.authorization)
     const token = req.headers.authorization?.split(" ")[1];
+    // console.log("Token:", token)
     
     if (!token) {
-      return sendResponse(res, 401, "Token nahi hai, login karo");
+      return sendResponse(res, 401, "Token not found, please login again");
     }
 
     const decoded = jwt.verify(token, ENV.ACCESS_TOKEN_SECRET);
@@ -18,7 +19,7 @@ const verifyToken = (req, res, next) => {
     next();
 
   } catch (error) {
-    return sendResponse(res, 401, "Token invalid or Expire Token");
+    return sendResponse(res, 401, "Invalid or expired token, please login again");
   }
 };
 
