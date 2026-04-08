@@ -1,3 +1,5 @@
+import jwt from "jsonwebtoken";
+
 import User from "../models/User.js";
 import sendResponse from "../utils/sendResponse.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/generateToken.js";
@@ -132,6 +134,41 @@ export const logout = async (req, res) => {
 
   } catch (error) {
     console.log(error);
+    return sendResponse(res, 500, "Server error", error.message);
+  }
+};
+
+
+
+
+export const refreshAccessToken = async (req, res) => {
+  try {
+    const token = req.cookies?.refreshToken;
+
+    if (!token) {
+      return sendResponse(res, 401, "Token not found, please login again");
+    }
+
+    // Verify Token
+    const decoded = jwt.verify(token, ENV.REFRESH_TOKEN_SECRET);
+
+    // Find user in DB
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return sendResponse(res, 401, "User not found, invalid token");
+    }
+
+    // Match token with DB
+    if (user.refreshToken !== token) {
+      return sendResponse(res, 401, "Token mismatch, please login again");
+    }
+
+    // Generate new Access Token
+    const accessToken = generateAccessToken(user._id, user.role);
+
+    return sendResponse(res, 200, "New access token generated", { accessToken });
+
+  } catch (error) {
     return sendResponse(res, 500, "Server error", error.message);
   }
 };
