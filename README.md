@@ -1,12 +1,12 @@
-# 🔐 Next Auth Client
+# 🔐 Auth Boilerplate
 
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![shadcn/ui](https://img.shields.io/badge/shadcn/ui-000000?style=for-the-badge&logo=shadcnui&logoColor=white)
-![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+![bcrypt](https://img.shields.io/badge/bcrypt-003A70?style=for-the-badge&logo=letsencrypt&logoColor=white)
 
-> Production-ready Next.js authentication frontend — Login, Register, Dashboard, Admin Panel — everything included. Just clone and start building.
+> Production-ready authentication boilerplate — Register, Login, JWT, Refresh Tokens, RBAC — everything included. Just clone and start building.
 
 ---
 
@@ -14,12 +14,12 @@
 
 | Feature | Description |
 |---------|-------------|
-| 📝 Login & Register | Email + Password authentication |
-| 🔑 JWT Tokens | Access Token stored securely |
+| 📝 Register & Login | Email + Password authentication |
+| 🔑 JWT Tokens | Access Token (15min) + Refresh Token (7days) |
 | 🍪 HTTP-only Cookies | Refresh token securely stored |
-| 🛡️ Route Protection | proxy.js protects all private routes |
-| 👥 Role-Based UI | Admin panel only visible to admins |
-| 🎨 shadcn/ui | Beautiful UI components out of the box |
+| 🛡️ RBAC | Role-Based Access — `user` `moderator` `admin` |
+| 🔒 Protected Routes | Middleware-based route protection |
+| 🔐 bcrypt Hashing | Passwords never stored in plain text |
 | 📦 Clean Structure | Scalable folder structure |
 
 ---
@@ -27,20 +27,26 @@
 ## 🗂️ Project Structure
 
 ```
-next-auth-client/
+auth-boilerplate/
+├── 📄 server.js                 # Entry point
 ├── 📄 .env.example              # Environment variables template
 └── 📁 src/
-    ├── 📁 app/
-    │   ├── (auth)/
-    │   │   ├── login/           # Login page
-    │   │   └── register/        # Register page
-    │   ├── dashboard/           # Protected dashboard
-    │   ├── admin/               # Admin only page
-    │   └── page.js              # Redirects to login
-    ├── 📁 lib/
-    │   ├── api.js               # Axios instance
-    │   └── auth.js              # Token management
-    └── 📄 proxy.js              # Route protection
+    ├── 📄 app.js                # Express setup
+    ├── 📁 config/
+    │   ├── env.js               # Variables validation
+    │   └── db.js                # MongoDB connection
+    ├── 📁 models/
+    │   └── User.js              # User schema + bcrypt hooks
+    ├── 📁 middleware/
+    │   ├── auth.js              # JWT verification
+    │   └── rbac.js              # Role checking
+    ├── 📁 routes/
+    │   └── auth.routes.js       # All auth routes
+    ├── 📁 controllers/
+    │   └── auth.controller.js   # Business logic
+    └── 📁 utils/
+        ├── generateToken.js     # JWT generator
+        └── sendResponse.js      # Response formatter
 ```
 
 ---
@@ -50,8 +56,8 @@ next-auth-client/
 ### 1️⃣ Clone the repo
 
 ```bash
-git clone https://github.com/anassyed19c1-collab/Next-Auth-Client.git
-cd Next-Auth-Client
+git clone https://github.com/anassyed19c1-collab/auth-boilerplate.git
+cd auth-boilerplate
 ```
 
 ### 2️⃣ Install dependencies
@@ -63,17 +69,19 @@ npm install
 ### 3️⃣ Setup environment variables
 
 ```bash
-# Windows
-copy .env.example .env.local
-
-# Mac/Linux
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Fill in your `.env.local` file:
+Fill in your `.env` file:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:5000
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/auth-boilerplate
+ACCESS_TOKEN_SECRET=your_access_token_secret
+REFRESH_TOKEN_SECRET=your_refresh_token_secret
+ACCESS_TOKEN_EXPIRY=15m
+REFRESH_TOKEN_EXPIRY=7d
+NODE_ENV=development
 ```
 
 ### 4️⃣ Run the server
@@ -82,45 +90,54 @@ NEXT_PUBLIC_API_URL=http://localhost:5000
 npm run dev
 ```
 
-> ✅ Server running at: `http://localhost:3000`
+> ✅ Server running at: `http://localhost:5000`
 
 ---
 
-## 📡 Available Pages
+## 📡 API Endpoints
 
-Base URL: `/`
+Base URL: `/api/auth`
 
-| Route | Description | Protected |
-|-------|-------------|-----------|
-| `/login` | Login page | ❌ |
-| `/register` | Register page | ❌ |
-| `/dashboard` | User dashboard | ✅ |
-| `/admin` | Admin panel | ✅ Admin only |
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `POST` | `/register` | Register a new user | ❌ |
+| `POST` | `/login` | Login user | ❌ |
+| `POST` | `/logout` | Logout user | ❌ |
+| `POST` | `/refresh-token` | Get new access token | ❌ |
+| `GET` | `/profile` | View profile | ✅ |
+| `GET` | `/admin` | Admin area | ✅ Admin only |
 
 ---
 
 ## 🔄 Auth Flow
 
 ```
-Login / Register
+Register / Login
       ↓
-Access Token ──► Stored in localStorage + cookie
-Refresh Token ──► Stored in HTTP-only cookie
+Access Token (15 min) ──► Send in Authorization header
+Refresh Token (7 days) ──► Stored in HTTP-only cookie
 
-Access Token expire?
+Access Token expired?
       ↓
 POST /refresh-token ──► New token (no re-login needed) ✅
 ```
 
 ---
 
-## 🛡️ Route Protection
+## 🛡️ Protected Routes — How to Use
 
-```
-/dashboard → Requires login
-/admin     → Requires admin role
-/login     → Redirects to dashboard if already logged in
-/register  → Redirects to dashboard if already logged in
+```js
+import verifyToken from './src/middleware/auth.js';
+import authorizeRoles from './src/middleware/rbac.js';
+
+// ✅ Any logged in user
+router.get('/dashboard', verifyToken, dashboardController);
+
+// ✅ Only admin
+router.delete('/user/:id', verifyToken, authorizeRoles('admin'), deleteUserController);
+
+// ✅ Admin or moderator
+router.put('/post/:id', verifyToken, authorizeRoles('admin', 'moderator'), updatePostController);
 ```
 
 ---
@@ -128,9 +145,9 @@ POST /refresh-token ──► New token (no re-login needed) ✅
 ## 👥 User Roles
 
 ```
-admin ──────► Full access — admin panel visible
+admin ──────► Full access — everything
 moderator ──► Elevated access
-user ────────► Basic access (default on register)
+user ────────► Basic access — own data only
 ```
 
 Default role on register: `user`
@@ -139,11 +156,11 @@ Default role on register: `user`
 
 ## 🔐 Security Features
 
-- 🔒 Access token stored in **HTTP-only cookie** — XSS safe
-- 🛡️ Route protection via **proxy.js**
-- 👥 **Role-based** UI rendering
-- 🚫 Unauthorized users **redirected** automatically
-- ⚡ Built on **Next.js 16** with App Router
+- 🔒 Passwords **never** stored in plain text — bcrypt hashed
+- 🍪 Refresh token in **HTTP-only cookie** — XSS safe
+- ⏱️ Access token **15 min expiry** — leak damage minimal
+- 🚫 Logout **invalidates** refresh token in DB
+- 🛡️ **CORS** configured — only allowed origins
 
 ---
 
@@ -151,7 +168,13 @@ Default role on register: `user`
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | Backend API URL | `http://localhost:5000` |
+| `PORT` | Server port | `5000` |
+| `MONGO_URI` | MongoDB URI | `mongodb://localhost:27017/auth` |
+| `ACCESS_TOKEN_SECRET` | Access token secret | `random_strong_string` |
+| `REFRESH_TOKEN_SECRET` | Refresh token secret | `another_strong_string` |
+| `ACCESS_TOKEN_EXPIRY` | Access token expiry | `15m` |
+| `REFRESH_TOKEN_EXPIRY` | Refresh token expiry | `7d` |
+| `NODE_ENV` | Environment | `development` / `production` |
 
 ---
 
@@ -159,24 +182,15 @@ Default role on register: `user`
 
 ```json
 {
-  "next": "Latest Next.js",
-  "react": "React 19",
-  "axios": "HTTP requests",
-  "js-cookie": "Cookie management",
-  "tailwindcss": "Styling",
-  "shadcn/ui": "UI components"
+  "express": "Web framework",
+  "mongoose": "MongoDB ODM",
+  "bcryptjs": "Password hashing",
+  "jsonwebtoken": "JWT tokens",
+  "dotenv": "Environment variables",
+  "cookie-parser": "Cookie handling",
+  "cors": "Cross-origin requests"
 }
 ```
-
----
-
-## 🔗 Related
-
-| | Description |
-|-|-------------|
-| **CLI Tool** | `npx create-next-auth-app-cli my-project` |
-| **Backend** | [auth-boilerplate](https://github.com/anassyed19c1-collab/auth-boilerplate) |
-| **Backend CLI** | `npx create-auth-app-cli my-backend` |
 
 ---
 
