@@ -16,7 +16,6 @@ app.use(cors({
         'http://localhost:3000',
         'https://next-auth-client-nu.vercel.app'
     ],
-    credentials: true,
 }))
 
 
